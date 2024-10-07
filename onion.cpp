@@ -20,12 +20,21 @@
 #include <atomic>
 #include <libudev.h>
 #include <set> 
+#include "onionsensor.h"
 
-// Function to monitor devices and manage threads dynamically
 void monitor_devices(sqlite3* db, const std::vector<std::string>& headers) {
-    int inotifyFd = inotify_init();  // Create inotify instance
+    // Initialize udev
+    struct udev* udev = udev_new();
+    if (!udev) {
+        std::cerr << "Can't create udev\n";
+        return;
+    }
+
+    // Initialize inotify
+    int inotifyFd = inotify_init();
     if (inotifyFd == -1) {
         std::cerr << "Failed to initialize inotify: " << strerror(errno) << std::endl;
+        udev_unref(udev);
         return;
     }
 
@@ -34,46 +43,58 @@ void monitor_devices(sqlite3* db, const std::vector<std::string>& headers) {
     if (wd == -1) {
         std::cerr << "Failed to add inotify watch: " << strerror(errno) << std::endl;
         close(inotifyFd);
+        udev_unref(udev);
         return;
     }
 
+    // Map to hold the OnionSensor instances
+    std::map<std::string, std::unique_ptr<OnionSensor>> sensors;
+
+    // Set of device nodes to monitor
+    std::set<std::string> device_nodes = {
+        "/dev/Onion1",
+        "/dev/Onion2",
+        "/dev/Onion3",
+        "/dev/Onion4"
+    };
+
+    // **Initial Scan to Detect Connected Devices**
+    struct udev_enumerate* enumerate = udev_enumerate_new(udev);
+    udev_enumerate_add_match_subsystem(enumerate, "tty");
+    udev_enumerate_scan_devices(enumerate);
+
+    struct udev_list_entry* devices = udev_enumerate_get_list_entry(enumerate);
+    struct udev_list_entry* dev_list_entry;
+
+    udev_list_entry_foreach(dev_list_entry, devices) {
+        const char* path = udev_list_entry_get_name(dev_list_entry);
+        struct udev_device* dev = udev_device_new_from_syspath(udev, path);
+
+        const char* devnode = udev_device_get_devnode(dev);
+        if (devnode && device_nodes.count(devnode)) {
+            std::string device_name = devnode;
+            std::cout << "[INFO] Device connected at startup: " << device_name << std::endl;
+
+            // Use user prompt or zenity as before
+            bool user_response = user_prompt("Device " + device_name + " is connected. Include in data recording?");
+            if (user_response) {
+                // Create a new OnionSensor instance
+                sensors[device_name] = std::unique_ptr<OnionSensor>(new OnionSensor(devnode, device_name, db, headers));
+                std::cout << "[INFO] Started sensor for " << device_name << std::endl;
+            } else {
+                std::cout << "[INFO] Not including " << device_name << " in data recording." << std::endl;
+            }
+        }
+
+        udev_device_unref(dev);
+    }
+
+    udev_enumerate_unref(enumerate);
+
+    // Begin monitoring for device events
     char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
     ssize_t numRead;
 
-    // Map to hold the device threads and their control flags
-    std::map<std::string, std::pair<std::thread, std::shared_ptr<std::atomic<bool>>>> device_threads;
-
-    // **Step 1: Initial scan of connected devices**
-    std::cout << "[INFO] Scanning for initially connected devices (Onion1 to Onion4)..." << std::endl;
-
-    std::vector<std::string> device_names = {"Onion1", "Onion2", "Onion3", "Onion4"};
-    for (const auto& device_name : device_names) {
-        std::string device_path = "/dev/" + device_name;
-        struct stat sb;
-        if (stat(device_path.c_str(), &sb) == 0 && (sb.st_mode & S_IFMT) == S_IFCHR) {
-            // Device exists, ask the user
-            std::cout << "[INFO] Device " << device_name << " is connected at startup." << std::endl;
-            std::string command = "zenity --question --text='Device " + device_name + " is connected. Include in data recording?'";
-            int result = system(command.c_str());
-            if (result == 0) {
-                std::cout << "[INFO] User chose to include " << device_name << " in data recording." << std::endl;
-                std::shared_ptr<std::atomic<bool>> keep_running = std::make_shared<std::atomic<bool>>(true);
-                device_threads[device_name] = std::make_pair(
-                    std::thread(read_device, device_path, device_name, db, headers, std::ref(*keep_running)),
-                    keep_running
-                );
-                std::cout << "[INFO] Started thread for " << device_name << std::endl;
-            } else {
-                std::cout << "[INFO] User chose not to include " << device_name << " in data recording." << std::endl;
-            }
-        } else {
-            std::cout << "[INFO] Device " << device_name << " is not connected at startup." << std::endl;
-        }
-    }
-
-    std::cout << "[INFO] Monitoring for plug/unplug events..." << std::endl;
-
-    // **Step 2: Monitor for plug/unplug events**
     while (true) {
         numRead = read(inotifyFd, buf, sizeof(buf));
         if (numRead <= 0) {
@@ -85,49 +106,47 @@ void monitor_devices(sqlite3* db, const std::vector<std::string>& headers) {
             struct inotify_event* event = (struct inotify_event*) p;
             std::string device_name = event->name;
 
-            // Check if the device is one of the target devices (Onion1, Onion2, etc.)
-            if (device_name == "Onion1" || device_name == "Onion2" ||
-                device_name == "Onion3" || device_name == "Onion4") {
-                
-                std::string device_path = "/dev/" + device_name;
+            // Debugging output...
 
-                if (event->mask & IN_CREATE) {
-                    // Device plugged in
-                    std::cout << "[INFO] Device plugged in: " << device_path << std::endl;
-                    std::string command = "zenity --question --text='Device " + device_name + " plugged in. Include in data recording?'";
-                    int result = system(command.c_str());
+            if (event->mask & IN_CREATE) {
+                // Check for devices in device_nodes
+                if (device_name.find("ttyUSB") == 0 || device_name.find("Onion") == 0) {
+                    usleep(500000); // Wait for symlink creation
 
-                    if (result == 0) {
-                        // User selected Yes
-                        std::cout << "[INFO] Including " << device_name << " in data recording." << std::endl;
+                    for (const auto& onion_device : device_nodes) {
+                        struct stat sb;
+                        if (stat(onion_device.c_str(), &sb) == 0 && S_ISCHR(sb.st_mode)) {
+                            std::string device_short_name = onion_device.substr(5); // Extract OnionX
 
-                        // Create an atomic control variable to manage the thread lifecycle
-                        std::shared_ptr<std::atomic<bool>> keep_running = std::make_shared<std::atomic<bool>>(true);
+                            // If sensor not already created
+                            if (sensors.count(device_short_name) == 0) {
+                                std::cout << "[INFO] Device plugged in: " << onion_device << std::endl;
 
-                        // Start a new thread to read from the device
-                        device_threads[device_name] = std::make_pair(
-                            std::thread(read_device, device_path, device_name, db, headers, std::ref(*keep_running)),
-                            keep_running
-                        );
-                        std::cout << "[INFO] Started thread for " << device_name << std::endl;
-                    } else {
-                        std::cout << "[INFO] Not including " << device_name << " in data recording." << std::endl;
-                    }
-                } else if (event->mask & IN_DELETE) {
-                    // Device unplugged
-                    std::cout << "[INFO] Device unplugged: " << device_path << std::endl;
-                    std::string command = "zenity --info --text='Device " + device_name + " unplugged.'";
-                    system(command.c_str());
-
-                    // Signal the thread to stop and join it
-                    if (device_threads.count(device_name)) {
-                        std::cout << "[INFO] Stopping thread for " << device_name << std::endl;
-                        *(device_threads[device_name].second) = false;  // Signal the thread to stop
-                        if (device_threads[device_name].first.joinable()) {
-                            device_threads[device_name].first.join();
+                                // Prompt user
+                                bool user_response = user_prompt("Device " + device_short_name + " plugged in. Include in data recording?");
+                                if (user_response) {
+                                    // Create a new OnionSensor instance
+                                    sensors[device_short_name] = std::unique_ptr<OnionSensor>(new OnionSensor(onion_device, device_short_name, db, headers));
+                                    std::cout << "[INFO] Started sensor for " << device_short_name << std::endl;
+                                } else {
+                                    std::cout << "[INFO] Not including " << device_short_name << " in data recording." << std::endl;
+                                }
+                            }
                         }
-                        device_threads.erase(device_name);
-                        std::cout << "[INFO] Thread for " << device_name << " stopped." << std::endl;
+                    }
+                }
+            } else if (event->mask & IN_DELETE) {
+                // Handle device removal
+                std::string device_path = "/dev/" + device_name;
+                if (device_nodes.count(device_path)) {
+                    std::string device_short_name = device_name;
+                    std::cout << "[INFO] Device unplugged: " << device_path << std::endl;
+
+                    // Destroy the OnionSensor instance
+                    if (sensors.count(device_short_name)) {
+                        std::cout << "[INFO] Stopping sensor for " << device_short_name << std::endl;
+                        sensors.erase(device_short_name);
+                        std::cout << "[INFO] Sensor for " << device_short_name << " stopped." << std::endl;
                     }
                 }
             }
@@ -139,20 +158,10 @@ void monitor_devices(sqlite3* db, const std::vector<std::string>& headers) {
     // Cleanup
     inotify_rm_watch(inotifyFd, wd);
     close(inotifyFd);
+    udev_unref(udev);
 
-    // Join any remaining threads
-    for (auto& pair : device_threads) {
-        std::cout << "[INFO] Stopping thread for " << pair.first << std::endl;
-        *(pair.second.second) = false;
-        if (pair.second.first.joinable()) {
-            pair.second.first.join();
-        }
-        std::cout << "[INFO] Thread for " << pair.first << " stopped." << std::endl;
-    }
-
-    std::cout << "[INFO] Device monitoring terminated." << std::endl;
+    // Sensors will be automatically destroyed when the map goes out of scope
 }
-
 
 
 

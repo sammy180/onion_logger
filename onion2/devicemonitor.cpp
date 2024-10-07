@@ -31,7 +31,9 @@ void DeviceMonitor::monitorDevices() {
             if (std::none_of(onionDevices.begin(), onionDevices.end(), [&](const Onion& o) {
                 return o.getDeviceName() == device;  // Check if device is already added
             })) {
-                addDevice(device);
+                // Construct the device path for each detected device
+                std::string devicePath = "/dev/" + device;
+                addDevice(device, devicePath);
             }
         }
 
@@ -51,10 +53,10 @@ void DeviceMonitor::monitorDevices() {
     }
 }
 
-void DeviceMonitor::addDevice(const std::string& deviceName) {
+void DeviceMonitor::addDevice(const std::string& deviceName, const std::string& devicePath) {
     if (deviceName == "Onion1" || deviceName == "Onion2" || deviceName == "Onion3" || deviceName == "Onion4") {
-        std::cout << "Detected: " << deviceName << std::endl;
-        onionDevices.emplace_back(deviceName);  // Add device and start monitoring data
+        std::cout << "Detected: " << deviceName << " at " << devicePath << std::endl;
+        onionDevices.emplace_back(deviceName, devicePath);  // Add device and start monitoring data
     }
 }
 

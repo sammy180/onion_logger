@@ -24,7 +24,7 @@ private:
     std::thread monitorThread;
 
     void monitorDevices();  // Continuously monitor device plugs/unplugs
-    void addDevice(const std::string& deviceName);
+    void addDevice(const std::string& deviceName, const std::string& devicePath);  // Updated to accept 2 arguments
     void removeDevice(const std::string& deviceName);
 };
 

@@ -1,10 +1,17 @@
 // onion.cpp
 #include "onion.h"
 #include <chrono>
+#include <fcntl.h>  // For opening the port
+#include <unistd.h>
+#include <termios.h>
+#include <sqlite3.h>  // For database interaction
 
-Onion::Onion(const std::string& deviceName) : deviceName(deviceName), keepRunning(true) {
+extern void read_device(const std::string& device_path, sqlite3* db, const std::string& device_name);
+
+
+Onion::Onion(const std::string& deviceName, const std::string& devicePath)
+    : deviceName(deviceName), devicePath(devicePath), keepRunning(true) {
     std::cout << "Onion device " << deviceName << " initialized." << std::endl;
-    openPort();
     startDataThread();
 }
 
@@ -13,7 +20,8 @@ Onion::~Onion() {
 }
 
 Onion::Onion(Onion&& other) noexcept
-    : deviceName(std::move(other.deviceName)), keepRunning(other.keepRunning.load()), dataThread(std::move(other.dataThread)) {
+    : deviceName(std::move(other.deviceName)), devicePath(std::move(other.devicePath)),
+      keepRunning(other.keepRunning.load()), dataThread(std::move(other.dataThread)) {
     other.keepRunning = false;
 }
 
@@ -22,6 +30,7 @@ Onion& Onion::operator=(Onion&& other) noexcept {
         stopDataThread();  // Stop current thread if running
 
         deviceName = std::move(other.deviceName);
+        devicePath = std::move(other.devicePath);
         keepRunning = other.keepRunning.load();
         dataThread = std::move(other.dataThread);
         other.keepRunning = false;
@@ -29,27 +38,35 @@ Onion& Onion::operator=(Onion&& other) noexcept {
     return *this;
 }
 
-void Onion::openPort() {
-    std::cout << "Opening port for " << deviceName << std::endl;
-}
-
 void Onion::startDataThread() {
-    dataThread = std::thread(&Onion::recordData, this);
+    // Start the thread that will call read_device for data reading
+    dataThread = std::thread(&Onion::readData, this);
 }
 
 void Onion::stopDataThread() {
     keepRunning = false;
     if (dataThread.joinable()) {
-        dataThread.join();
+        dataThread.join();  // Join the thread to stop safely
     }
 }
 
-void Onion::recordData() {
-    while (keepRunning) {
-        std::cout << "Recording data from " << deviceName << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(1));  // Simulate data delay
+void Onion::readData() {
+    sqlite3* db = nullptr;
+    // Open the SQLite database (for demonstration purposes, the database file path could be adjusted)
+    int rc = sqlite3_open("sensor_data.db", &db);
+    if (rc) {
+        std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+        return;
     }
-    std::cout << "Stopped recording data from " << deviceName << std::endl;
+
+    while (keepRunning) {
+        // Call the read_device function, which opens the port and reads incoming data
+        read_device(devicePath, db, deviceName);
+        std::this_thread::sleep_for(std::chrono::seconds(1));  // Adjust delay based on data rate
+    }
+
+    // Close the database after reading
+    sqlite3_close(db);
 }
 
 std::string Onion::getDeviceName() const {
