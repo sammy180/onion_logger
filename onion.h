@@ -8,6 +8,8 @@
 
 
 // Function declarations
+
+bool user_prompt(const std::string& message);
 void monitor_devices(sqlite3* db, const std::vector<std::string>& headers);
 std::vector<std::string> split_string(const std::string& str, char delimiter);
 void create_table(sqlite3* db, const std::vector<std::string>& headers) ;

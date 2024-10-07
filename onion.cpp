@@ -18,10 +18,8 @@
 #include <atomic>
 #include <memory>
 #include <atomic>
-
-
-
-// Function to monitor devices
+#include <libudev.h>
+#include <set> 
 
 // Function to monitor devices and manage threads dynamically
 void monitor_devices(sqlite3* db, const std::vector<std::string>& headers) {
@@ -154,6 +152,27 @@ void monitor_devices(sqlite3* db, const std::vector<std::string>& headers) {
 
     std::cout << "[INFO] Device monitoring terminated." << std::endl;
 }
+
+
+
+
+
+bool user_prompt(const std::string& message) {
+    std::string response;
+    while (true) {
+        std::cout << message << " [y/n]: ";
+        std::getline(std::cin, response);
+        if (response == "y" || response == "Y") {
+            return true;
+        } else if (response == "n" || response == "N") {
+            return false;
+        } else {
+            std::cout << "Please enter 'y' for yes or 'n' for no." << std::endl;
+        }
+    }
+}
+
+
 
 
 
@@ -325,7 +344,7 @@ void read_device(const std::string &device_path, const std::string &device_name,
             std::vector<std::string> values = split_string(data, ';');
 
             // If there are fewer tokens than headers, buffer the data
-            if (values.size() < headers.size()) {
+            if (values.size() < 30) {
                 std::cerr << "Data incomplete: less tokens than headers, buffering incomplete data." << std::endl;
                 std::cerr.flush();
                 incomplete_data = data;  // Store incomplete data in the buffer
