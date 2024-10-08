@@ -4,6 +4,8 @@
 #include <fcntl.h>    // For opening the port
 #include <unistd.h>   // For read/write operations
 #include <termios.h>  // For configuring serial port settings
+#include <cstring>  // Include for memset
+
 
 void read_device(const std::string& device_path, sqlite3* db, const std::string& device_name) {
     int fd = open(device_path.c_str(), O_RDWR | O_NOCTTY | O_SYNC);
