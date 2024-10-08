@@ -41,6 +41,28 @@
             margin-bottom: 10px;
         }
     </style>
+
+    <script>
+        async function updateQuadrants() {
+            try {
+                const response = await fetch('/get_data'); // Replace with your actual endpoint
+                const data = await response.json();
+
+                document.querySelector('.quadrant:nth-child(1)').lastChild.textContent = `CO2: ${data.box1}`;
+                document.querySelector('.quadrant:nth-child(2)').lastChild.textContent = `CO2: ${data.box2}`;
+                document.querySelector('.quadrant:nth-child(3)').lastChild.textContent = `CO2: ${data.box3}`;
+                document.querySelector('.quadrant:nth-child(4)').lastChild.textContent = `CO2: ${data.box4}`;
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Update quadrants every 15 seconds
+        setInterval(updateQuadrants, 15000);
+
+        // Initial update when the page loads
+        window.onload = updateQuadrants;
+    </script>
 </head>
 
 <body>
