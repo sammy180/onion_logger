@@ -1,0 +1,16 @@
+[Unit]
+Description= serial onion logging interface 
+After=multi-user.target
+
+[Service]
+# Note: setting PYTHONUNBUFFERED is necessary to see the output of this service in the journal
+# See https://docs.python.org/2/using/cmdline.html#envvar-PYTHONUNBUFFERED
+Environment=PYTHONUNBUFFERED=true
+Type=notify
+ExecStart=/home/pi/onion_logger/onionenv/bin/python3 /home/pi/onion_logger/onionsense.py
+User=pi
+WorkingDirectory=/home/pi/onion_logger
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

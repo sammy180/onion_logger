@@ -1,0 +1,12 @@
+[Unit]
+Description=Flask Application for Onion Logger
+
+[Service]
+User=pi
+WorkingDirectory=/home/pi/onion_logger
+ExecStart=/home/pi/onion_logger/onionenv/bin/python3 /home/pi/onion_logger/fonion/app.py
+Restart=always
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
