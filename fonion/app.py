@@ -28,10 +28,10 @@ def index():
     box3_values = 'Error'
     box4_values = 'Error'
 
-    box1 = db_session.query(SensorData).filter_by(BoxID=1).order_by(SensorData.id.desc()).first()
-    box2 = db_session.query(SensorData).filter_by(BoxID=2).order_by(SensorData.id.desc()).first()
-    box3 = db_session.query(SensorData).filter_by(BoxID=3).order_by(SensorData.id.desc()).first()
-    box4 = db_session.query(SensorData).filter_by(BoxID=4).order_by(SensorData.id.desc()).first()
+    box1 = db_session.query(SensorData).filter_by(BoxID=4).order_by(SensorData.id.desc()).first()
+    box2 = db_session.query(SensorData).filter_by(BoxID=5).order_by(SensorData.id.desc()).first()
+    box3 = db_session.query(SensorData).filter_by(BoxID=8).order_by(SensorData.id.desc()).first()
+    box4 = db_session.query(SensorData).filter_by(BoxID=10).order_by(SensorData.id.desc()).first()
 
     if box1 != None:
         box1_values = box1.CO2
@@ -50,10 +50,10 @@ def index():
 
 @app.route('/get_data')
 def get_data():
-    box1 = db_session.query(SensorData).filter_by(BoxID=1).order_by(SensorData.id.desc()).first()
-    box2 = db_session.query(SensorData).filter_by(BoxID=2).order_by(SensorData.id.desc()).first()
-    box3 = db_session.query(SensorData).filter_by(BoxID=3).order_by(SensorData.id.desc()).first()
-    box4 = db_session.query(SensorData).filter_by(BoxID=4).order_by(SensorData.id.desc()).first()
+    box1 = db_session.query(SensorData).filter_by(BoxID=4).order_by(SensorData.id.desc()).first()
+    box2 = db_session.query(SensorData).filter_by(BoxID=5).order_by(SensorData.id.desc()).first()
+    box3 = db_session.query(SensorData).filter_by(BoxID=8).order_by(SensorData.id.desc()).first()
+    box4 = db_session.query(SensorData).filter_by(BoxID=10).order_by(SensorData.id.desc()).first()
 
     data = {
         "box1": box1.CO2 if box1 is not None else 'Error',
