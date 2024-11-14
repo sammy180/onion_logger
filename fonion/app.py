@@ -2,6 +2,7 @@ from flask import Flask, render_template, jsonify, request, session
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, desc
+from datetime import datetime
 
 DATABASE_URL = "sqlite:////home/sammy/Active workspace/onion_logger/sensor_data2.db"
 # DATABASE_URL = "sqlite:////home/pi/onion_logger/sensor_data2.db"
@@ -30,20 +31,6 @@ def setup():
             unique_box_ids.append(result.BoxID)
         if len(unique_box_ids) == 4:
             break
-@app.route('/')
-def index():
-    box1_values = 'Error'
-    box2_values = 'Error'
-    box3_values = 'Error'
-    box4_values = 'Error'
-
-    box1 = db_session.query(SensorData).filter_by(BoxID=4).order_by(SensorData.id.desc()).first()
-    box2 = db_session.query(SensorData).filter_by(BoxID=5).order_by(SensorData.id.desc()).first()
-    box3 = db_session.query(SensorData).filter_by(BoxID=8).order_by(SensorData.id.desc()).first()
-    box4 = db_session.query(SensorData).filter_by(BoxID=10).order_by(SensorData.id.desc()).first()
-
-    if box1 != None:
-        box1_values = box1.CO2
 
     box_ids = sorted(unique_box_ids[:4])
     session['box_ids'] = box_ids  # Store box_ids in the session
@@ -54,6 +41,7 @@ def index():
         scroll_labels = [line.strip() for line in file.readlines()]
 
     return jsonify({"box_ids": box_ids, "scroll_labels": scroll_labels})
+
 
 @app.route('/')
 def index():
@@ -76,20 +64,51 @@ def index():
     box2 = db_session.query(SensorData).filter_by(BoxID=box_ids[1]).order_by(SensorData.id.desc()).first()
     box3 = db_session.query(SensorData).filter_by(BoxID=box_ids[2]).order_by(SensorData.id.desc()).first()
     box4 = db_session.query(SensorData).filter_by(BoxID=box_ids[3]).order_by(SensorData.id.desc()).first()
-    
-    if box1 is not None:
-        quad1_val = box1.temp
-    if box2 is not None:
-        quad2_val = box2.CO2
-    if box3 is not None:
-        quad3_val = box3.CO2
-    if box4 is not None:
-        quad4_val = box4.CO2
 
-    return render_template('index.html', box1=quad1_val, box2=quad2_val, box3=quad3_val, box4=quad4_val)
+    if box1:
+        quad1_val = box1.GW_datetime
+    if box2:
+        quad2_val = box2.GW_datetime
+    if box3:
+        quad3_val = box3.GW_datetime
+    if box4:
+        quad4_val = box4.GW_datetime
+
+    # Calculate the time difference from the last data point to now
+
+    now = datetime.now()
+    time_diff1 = (now - box1.GW_datetime).total_seconds() if box1 else 'Error'
+    time_diff2 = (now - box2.GW_datetime).total_seconds() if box2 else 'Error'
+    time_diff3 = (now - box3.GW_datetime).total_seconds() if box3 else 'Error'
+    time_diff4 = (now - box4.GW_datetime).total_seconds() if box4 else 'Error'
+
+    data = {
+        "box1": {
+            "value": quad1_val,
+            "time_diff": time_diff1
+        },
+        "box2": {
+            "value": quad2_val,
+            "time_diff": time_diff2
+        },
+        "box3": {
+            "value": quad3_val,
+            "time_diff": time_diff3
+        },
+        "box4": {
+            "value": quad4_val,
+            "time_diff": time_diff4
+        }
+    }
+
+
+    return render_template('index.html', data=data)
+    
+
 
 @app.route('/get_data')
 def get_data():
+
     field = request.args.get('field')
     box_ids = session.get('box_ids', [])
 
@@ -101,12 +120,42 @@ def get_data():
     box3 = db_session.query(SensorData).filter_by(BoxID=box_ids[2]).order_by(SensorData.id.desc()).first()
     box4 = db_session.query(SensorData).filter_by(BoxID=box_ids[3]).order_by(SensorData.id.desc()).first()
 
+
+    if box1:
+        quad1_val = box1.GW_datetime
+    if box2:
+        quad2_val = box2.GW_datetime
+    if box3:
+        quad3_val = box3.GW_datetime
+    if box4:
+        quad4_val = box4.GW_datetime
+
+    # Calculate the time difference from the last data point to now
+
+    now = datetime.now()
+    time_diff1 = int((now - box1.GW_datetime).total_seconds() / 60) if box1 else 'Error'
+    time_diff2 = int((now - box2.GW_datetime).total_seconds() / 60) if box2 else 'Error'
+    time_diff3 = int((now - box3.GW_datetime).total_seconds() / 60) if box3 else 'Error'
+    time_diff4 = int((now - box4.GW_datetime).total_seconds() / 60) if box4 else 'Error'
+
     data = {
-        "box1": getattr(box1, field, 'Error') if box1 is not None else 'Error',
-        "box2": getattr(box2, field, 'Error') if box2 is not None else 'Error',
-        "box3": getattr(box3, field, 'Error') if box3 is not None else 'Error',
-        "box4": getattr(box4, field, 'Error') if box4 is not None else 'Error'
-    }
+            "box1": {
+                "value": getattr(box1, field, 'Error') if box1 is not None else 'Error',
+                "time_diff": time_diff1
+            },
+            "box2": {
+                "value": getattr(box2, field, 'Error') if box1 is not None else 'Error',
+                "time_diff": time_diff2
+            },
+            "box3": {
+                "value": getattr(box3, field, 'Error') if box1 is not None else 'Error',
+                "time_diff": time_diff3
+            },
+            "box4": {
+                "value": getattr(box4, field, 'Error') if box1 is not None else 'Error',
+                "time_diff": time_diff4
+            }
+        }
 
     return jsonify(data)
 

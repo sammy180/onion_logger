@@ -40,6 +40,12 @@
             font-size: 1.5em;
             background-color: #d6fabc;
             /* Light yellow background */
+            transition: background-color 0.3s;
+        }
+
+        .alert {
+            background-color: #ffcccc !important;
+            /* Light red */
         }
 
         .buttons {
@@ -52,7 +58,7 @@
             align-items: center;
             width: auto;
             border: 1px solid #ccc;
-            border-radius: 30px;
+            border-radius: 60px;
             /* Fully rounded corners */
             overflow: hidden;
         }
@@ -60,7 +66,7 @@
         button {
             padding: 20px 40px;
             /* Larger buttons */
-            font-size: 5em;
+            font-size: 2em;
             /* Larger font size */
             cursor: pointer;
             border: none;
@@ -97,21 +103,25 @@
             <div class="title">Box 1</div>
             <div class="parameter">Parameter:</div>
             <div class="value">{{ box1 }}</div>
+            <div class="time_diff">last seen </div>
         </div>
         <div class="quadrant">
             <div class="title">Box 2</div>
             <div class="parameter">Parameter:</div>
             <div class="value">{{ box2 }}</div>
+            <div class="time_diff">last seen </div>
         </div>
         <div class="quadrant">
             <div class="title">Box 3</div>
             <div class="parameter">Parameter:</div>
-            <div class="value">{{ box3 }}</div>
+            <div class="value">Status: offline </div>
+            <div class="time_diff">last seen </div>
         </div>
         <div class="quadrant">
             <div class="title">Box 4</div>
             <div class="parameter">Parameter:</div>
-            <div class="value">{{ box4 }}</div>
+            <div class="value"> Status: Offline </div>
+            <div class="time_diff">last seen </div>
         </div>
         <div class="buttons">
             <button onclick="prevField()">Prev</button>

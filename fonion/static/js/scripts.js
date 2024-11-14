@@ -16,36 +16,29 @@ async function fetchScrollLabels() {
 
 async function updateQuadrants() {
     if (scrollLabels.length === 0 || boxIds.length === 0) return;
-    console.log('updateQuadrants has been run');
-    
+
     try {
         const field = scrollLabels[currentFieldIndex];
         const response = await fetch(`/get_data?field=${field}`);
         const data = await response.json();
-        console.log(`Box IDs: ${boxIds.join(', ')}`);
-        console.log(`Current field: ${field}`);
 
-        // First quadrant
-        document.querySelector('.quadrant:nth-child(1) .title').textContent = `Box ${boxIds[0]}`;
-        document.querySelector('.quadrant:nth-child(1) .parameter').textContent = `${field}:`;
-        document.querySelector('.quadrant:nth-child(1) .value').textContent = `${data.box1}`;
+        // Update each quadrant and check time difference
+        for (let i = 1; i <= 4; i++) {
+            const quadrant = document.querySelector(`.quadrant:nth-child(${i})`);
+            const boxData = data[`box${i}`];
+            
+            quadrant.querySelector('.title').textContent = `Box ${boxIds[i-1]}`;
+            quadrant.querySelector('.parameter').textContent = `${field}: ${boxData.value}`;
+            quadrant.querySelector('.time_diff').textContent = `last meas: ${boxData.time_diff} min ago`;
+            
+            // Add or remove alert class based on time difference
+            if (boxData.time_diff > 5) {
+                quadrant.classList.add('alert');
+            } else {
+                quadrant.classList.remove('alert');
+            }
+        }
 
-        // Second quadrant
-        document.querySelector('.quadrant:nth-child(2) .title').textContent = `Box ${boxIds[1]}`;
-        document.querySelector('.quadrant:nth-child(2) .parameter').textContent = `${field}:`;
-        document.querySelector('.quadrant:nth-child(2) .value').textContent = `${data.box2}`;
-
-        // Third quadrant
-        document.querySelector('.quadrant:nth-child(3) .title').textContent = `Box ${boxIds[2]}`;
-        document.querySelector('.quadrant:nth-child(3) .parameter').textContent = `${field}:`;
-        document.querySelector('.quadrant:nth-child(3) .value').textContent = `${data.box3}`;
-
-        // Fourth quadrant
-        document.querySelector('.quadrant:nth-child(4) .title').textContent = `Box ${boxIds[3]}`;
-        document.querySelector('.quadrant:nth-child(4) .parameter').textContent = `${field}:`;
-        document.querySelector('.quadrant:nth-child(4) .value').textContent = `${data.box4}`;
-
-        console.log('updateQuadrants has been run');
     } catch (error) {
         console.error('Error fetching data:', error);
     }
