@@ -24,85 +24,49 @@ app.secret_key = 'your_secret_key'  # Set a secret key for session management
 
 @app.route('/')
 def index():
-    # Query the database for the highest IDs and find the first 4 unique BoxIDs
-    unique_box_ids = []
-    results = db_session.query(SensorData.BoxID).order_by(desc(SensorData.id)).all()
+    try:
+        # Initialize defaults
+        box_ids = session.get('box_ids', [])
+        if not box_ids:
+            # Query for unique BoxIDs
+            unique_box_ids = []
+            results = db_session.query(SensorData.BoxID).order_by(desc(SensorData.id)).all()
+            
+            for result in results:
+                if result.BoxID not in unique_box_ids:
+                    unique_box_ids.append(result.BoxID)
+                if len(unique_box_ids) == 4:
+                    break
+                    
+            box_ids = sorted(unique_box_ids)
+            session['box_ids'] = box_ids
 
-    for result in results:
-        if result.BoxID not in unique_box_ids:
-            unique_box_ids.append(result.BoxID)
-        if len(unique_box_ids) == 4:
-            break
+        # Initialize default values
+        boxes_data = {f"box{i}": {
+            "value": 'No Data',
+            "time_diff": 'N/A'
+        } for i in range(1, 5)}
 
-    box_ids = sorted(unique_box_ids[:4])
-    session['box_ids'] = box_ids  # Store box_ids in the session
+        # Try to get data for each box
+        for i, box_id in enumerate(box_ids, 1):
+            try:
+                box = db_session.query(SensorData).filter_by(BoxID=box_id).order_by(SensorData.id.desc()).first()
+                if box:
+                    now = datetime.now()
+                    time_diff = int((now - box.GW_datetime).total_seconds() / 60)
+                    boxes_data[f"box{i}"].update({
+                        "value": box.GW_datetime,
+                        "time_diff": time_diff
+                    })
+            except Exception as e:
+                app.logger.error(f"Error getting data for box {box_id}: {str(e)}")
+                continue
 
-    # Read the headers.txt file to get scroll_labels
-    headers_file_path = 'headers.txt'
-    with open(headers_file_path, 'r') as file:
-        scroll_labels = [line.strip() for line in file.readlines()]
+        return render_template('index.html', data=boxes_data)
 
-
-
-
-    quad1_val = 'Error'
-    quad2_val = 'Error'
-    quad3_val = 'Error'
-    quad4_val = 'Error'
-
-    box_ids = session.get('box_ids', [])
-
-    if len(box_ids) < 4:
-        # Retrieve the unique BoxIDs from the setup route
-        response = setup()
-        if response.status_code == 400:
-            return render_template('index.html', error="Less than 4 unique BoxIDs found")
-
-        box_ids = response.json['box_ids']
-    
-    box1 = db_session.query(SensorData).filter_by(BoxID=box_ids[0]).order_by(SensorData.id.desc()).first() if box_ids else None
-    box2 = db_session.query(SensorData).filter_by(BoxID=box_ids[1]).order_by(SensorData.id.desc()).first() if len(box_ids) > 1 else None
-    box3 = db_session.query(SensorData).filter_by(BoxID=box_ids[2]).order_by(SensorData.id.desc()).first() if len(box_ids) > 2 else None
-    box4 = db_session.query(SensorData).filter_by(BoxID=box_ids[3]).order_by(SensorData.id.desc()).first() if len(box_ids) > 3 else None
-
-    if box1:
-        quad1_val = box1.GW_datetime
-    if box2:
-        quad2_val = box2.GW_datetime
-    if box3:
-        quad3_val = box3.GW_datetime
-    if box4:
-        quad4_val = box4.GW_datetime
-
-    # Calculate the time difference from the last data point to now
-
-    now = datetime.now()
-    time_diff1 = (now - box1.GW_datetime).total_seconds() if box1 else 'Error'
-    time_diff2 = (now - box2.GW_datetime).total_seconds() if box2 else 'Error'
-    time_diff3 = (now - box3.GW_datetime).total_seconds() if box3 else 'Error'
-    time_diff4 = (now - box4.GW_datetime).total_seconds() if box4 else 'Error'
-
-    data = {
-        "box1": {
-            "value": quad1_val,
-            "time_diff": time_diff1
-        },
-        "box2": {
-            "value": quad2_val,
-            "time_diff": time_diff2
-        },
-        "box3": {
-            "value": quad3_val,
-            "time_diff": time_diff3
-        },
-        "box4": {
-            "value": quad4_val,
-            "time_diff": time_diff4
-        }
-    }
-
-
-    return render_template('index.html', data=data)
+    except Exception as e:
+        app.logger.error(f"Error in index route: {str(e)}")
+        return render_template('index.html', error="System error occurred", data={})
     
 
 
