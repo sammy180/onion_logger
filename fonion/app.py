@@ -20,8 +20,10 @@ db_session = Session(engine)
 app = Flask(import_name=__name__)
 app.secret_key = 'your_secret_key'  # Set a secret key for session management
 
-@app.route('/setup')
-def setup():
+
+
+@app.route('/')
+def index():
     # Query the database for the highest IDs and find the first 4 unique BoxIDs
     unique_box_ids = []
     results = db_session.query(SensorData.BoxID).order_by(desc(SensorData.id)).all()
@@ -40,11 +42,9 @@ def setup():
     with open(headers_file_path, 'r') as file:
         scroll_labels = [line.strip() for line in file.readlines()]
 
-    return jsonify({"box_ids": box_ids, "scroll_labels": scroll_labels})
 
 
-@app.route('/')
-def index():
+
     quad1_val = 'Error'
     quad2_val = 'Error'
     quad3_val = 'Error'
@@ -60,10 +60,10 @@ def index():
 
         box_ids = response.json['box_ids']
     
-    box1 = db_session.query(SensorData).filter_by(BoxID=box_ids[0]).order_by(SensorData.id.desc()).first()
-    box2 = db_session.query(SensorData).filter_by(BoxID=box_ids[1]).order_by(SensorData.id.desc()).first()
-    box3 = db_session.query(SensorData).filter_by(BoxID=box_ids[2]).order_by(SensorData.id.desc()).first()
-    box4 = db_session.query(SensorData).filter_by(BoxID=box_ids[3]).order_by(SensorData.id.desc()).first()
+    box1 = db_session.query(SensorData).filter_by(BoxID=box_ids[0]).order_by(SensorData.id.desc()).first() if box_ids else None
+    box2 = db_session.query(SensorData).filter_by(BoxID=box_ids[1]).order_by(SensorData.id.desc()).first() if len(box_ids) > 1 else None
+    box3 = db_session.query(SensorData).filter_by(BoxID=box_ids[2]).order_by(SensorData.id.desc()).first() if len(box_ids) > 2 else None
+    box4 = db_session.query(SensorData).filter_by(BoxID=box_ids[3]).order_by(SensorData.id.desc()).first() if len(box_ids) > 3 else None
 
     if box1:
         quad1_val = box1.GW_datetime
@@ -145,17 +145,17 @@ def get_data():
                 "time_diff": time_diff1
             },
             "box2": {
-                "value": getattr(box2, field, 'Error') if box1 is not None else 'Error',
+                "value": getattr(box2, field, 'Error') if box2 is not None else 'Error',
                 "status": "Offline" if time_diff2 > 5 else "Online",
                 "time_diff": time_diff2
             },
             "box3": {
-                "value": getattr(box3, field, 'Error') if box1 is not None else 'Error',
+                "value": getattr(box3, field, 'Error') if box3 is not None else 'Error',
                 "status": "Offline" if time_diff3 > 5 else "Online",
                 "time_diff": time_diff3
             },
             "box4": {
-                "value": getattr(box4, field, 'Error') if box1 is not None else 'Error',
+                "value": getattr(box4, field, 'Error') if box4 is not None else 'Error',
                 "status": "Offline" if time_diff4 > 5 else "Online",
                 "time_diff": time_diff4
             }
