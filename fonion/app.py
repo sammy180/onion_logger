@@ -141,18 +141,22 @@ def get_data():
     data = {
             "box1": {
                 "value": getattr(box1, field, 'Error') if box1 is not None else 'Error',
+                "status": "Offline" if time_diff1 > 5 else "Online",
                 "time_diff": time_diff1
             },
             "box2": {
                 "value": getattr(box2, field, 'Error') if box1 is not None else 'Error',
+                "status": "Offline" if time_diff2 > 5 else "Online",
                 "time_diff": time_diff2
             },
             "box3": {
                 "value": getattr(box3, field, 'Error') if box1 is not None else 'Error',
+                "status": "Offline" if time_diff3 > 5 else "Online",
                 "time_diff": time_diff3
             },
             "box4": {
                 "value": getattr(box4, field, 'Error') if box1 is not None else 'Error',
+                "status": "Offline" if time_diff4 > 5 else "Online",
                 "time_diff": time_diff4
             }
         }
