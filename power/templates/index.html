@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relay Control</title>
+    <style>
+        .button {
+            width: 150px;
+            height: 150px;
+            font-size: 24px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Relay Control Interface</h1>
+    <div>
+        {% for i in range(4) %}
+            <form action="/toggle/{{ i + 1 }}" method="post">
+                <button class="button" type="submit" style="background-color: {% if relay_states[i] == 1 %}green{% else %}red{% endif %};">
+                    Relay {{ i + 1 }}
+                </button>
+            </form>
+        {% endfor %}
+    </div>
+</body>
+</html>
+

@@ -30,6 +30,20 @@ def setup():
             unique_box_ids.append(result.BoxID)
         if len(unique_box_ids) == 4:
             break
+@app.route('/')
+def index():
+    box1_values = 'Error'
+    box2_values = 'Error'
+    box3_values = 'Error'
+    box4_values = 'Error'
+
+    box1 = db_session.query(SensorData).filter_by(BoxID=4).order_by(SensorData.id.desc()).first()
+    box2 = db_session.query(SensorData).filter_by(BoxID=5).order_by(SensorData.id.desc()).first()
+    box3 = db_session.query(SensorData).filter_by(BoxID=8).order_by(SensorData.id.desc()).first()
+    box4 = db_session.query(SensorData).filter_by(BoxID=10).order_by(SensorData.id.desc()).first()
+
+    if box1 != None:
+        box1_values = box1.CO2
 
     box_ids = sorted(unique_box_ids[:4])
     session['box_ids'] = box_ids  # Store box_ids in the session
@@ -64,7 +78,7 @@ def index():
     box4 = db_session.query(SensorData).filter_by(BoxID=box_ids[3]).order_by(SensorData.id.desc()).first()
     
     if box1 is not None:
-        quad1_val = box1.CO2
+        quad1_val = box1.temp
     if box2 is not None:
         quad2_val = box2.CO2
     if box3 is not None:

@@ -105,7 +105,7 @@ void emit_event(int fd, int type, int code, int value) {
 }
 
 // Function to emulate mouse movement and click based on touch data
-void emulate_mouse(int x_position, int y_position) {
+void emulate_mouse(int x_position, int y_position, int touch_event) {
     // Apply scaling and offset (adjust these calculations as needed)
     int x_mapped = (int)((x_position * X_SCALE) + X_OFFSET);
     int y_mapped = (int)((y_position * Y_SCALE) + Y_OFFSET);
@@ -123,6 +123,13 @@ void emulate_mouse(int x_position, int y_position) {
     emit_event(uinput_fd, EV_ABS, ABS_X, x_mapped);
     emit_event(uinput_fd, EV_ABS, ABS_Y, y_mapped);
 
+    // If touch event indicates touch down, emit mouse click
+    if (touch_event == 1) { // Assuming 1 indicates touch down
+        emit_event(uinput_fd, EV_KEY, BTN_LEFT, 1); // Press left mouse button
+    } else if (touch_event == 0) { // Assuming 0 indicates touch release
+        emit_event(uinput_fd, EV_KEY, BTN_LEFT, 0); // Release left mouse button
+    }
+
     // Sync the events
     emit_event(uinput_fd, EV_SYN, SYN_REPORT, 0);
 }
@@ -133,6 +140,7 @@ void read_touch_data() {
     unsigned char xl = read_register(0x04); // Register 0x04 (low bits of X)
     unsigned char yh = read_register(0x05); // Register 0x05 (high bits of Y)
     unsigned char yl = read_register(0x06); // Register 0x06 (low bits of Y)
+    unsigned char touch_status = read_register(0x02); // Register 0x02 (touch status)
 
     if (xh == 0xFF || xl == 0xFF || yh == 0xFF || yl == 0xFF) {
         printf("Failed to read valid touch data from registers.\n");
@@ -143,11 +151,14 @@ void read_touch_data() {
     int x_position = ((xh & 0x0F) << 8) | xl; // Use only lower 4 bits of XH
     int y_position = ((yh & 0x0F) << 8) | yl; // Use only lower 4 bits of YH
 
+    // Determine touch event status (1 for touch down, 0 for release)
+    int touch_event = (touch_status & 0x0F) > 0 ? 1 : 0;
+
     // Log the full coordinates
-    printf("Touch Coordinates: X = %d, Y = %d\n", x_position, y_position);
+    printf("Touch Coordinates: X = %d, Y = %d, Touch Event: %d\n", x_position, y_position, touch_event);
 
     // Call the mouse emulation function
-    emulate_mouse(x_position, y_position);
+    emulate_mouse(x_position, y_position, touch_event);
 }
 
 // Interrupt handler for touch events
