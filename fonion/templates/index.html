@@ -20,68 +20,102 @@
         }
 
         .container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            grid-template-rows: 1fr 1fr;
-            height: 100%;
-            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            height: 100vh;
+            width: 100vw;
+            gap: 0;
+            padding: 10px;
+            position: relative;
         }
 
         .quadrant {
+            flex: 1 1 calc(50% - 20px);
+            border: 1px solid black;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            font-size: 4em;
-            border: 1px solid #000;
+            align-items: center;
+            font-size: 1.5em;
+            background-color: #d6fabc;
+            /* Light yellow background */
         }
 
-        .title {
-            font-size: 0.5em;
-            margin-bottom: 10px;
+        .buttons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: auto;
+            border: 1px solid #ccc;
+            border-radius: 30px;
+            /* Fully rounded corners */
+            overflow: hidden;
+        }
+
+        button {
+            padding: 20px 40px;
+            /* Larger buttons */
+            font-size: 5em;
+            /* Larger font size */
+            cursor: pointer;
+            border: none;
+            background-color: #f0f0f0;
+            transition: background-color 0.3s;
+            flex: 1 1 50%;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        button:first-child {
+            border-right: 1px solid #ccc;
+            border-top-left-radius: 30px;
+            /* Fully rounded left side */
+            border-bottom-left-radius: 30px;
+            /* Fully rounded left side */
+        }
+
+        button:last-child {
+            border-top-right-radius: 30px;
+            /* Fully rounded right side */
+            border-bottom-right-radius: 30px;
+            /* Fully rounded right side */
         }
     </style>
-
-    <script>
-        async function updateQuadrants() {
-            try {
-                const response = await fetch('/get_data'); // Replace with your actual endpoint
-                const data = await response.json();
-
-                document.querySelector('.quadrant:nth-child(1)').lastChild.textContent = `CO2: ${data.box1}`;
-                document.querySelector('.quadrant:nth-child(2)').lastChild.textContent = `CO2: ${data.box2}`;
-                document.querySelector('.quadrant:nth-child(3)').lastChild.textContent = `CO2: ${data.box3}`;
-                document.querySelector('.quadrant:nth-child(4)').lastChild.textContent = `CO2: ${data.box4}`;
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        }
-
-        // Update quadrants every 15 seconds
-        setInterval(updateQuadrants, 15000);
-
-        // Initial update when the page loads
-        window.onload = updateQuadrants;
-    </script>
+    <script src="/static/js/scripts.js" defer></script>
 </head>
 
 <body>
     <div class="container">
         <div class="quadrant">
             <div class="title">Box 1</div>
-            CO2: {{ box1 }}
+            <div class="parameter">Parameter:</div>
+            <div class="value">{{ box1 }}</div>
         </div>
         <div class="quadrant">
             <div class="title">Box 2</div>
-            CO2: {{ box2 }}
+            <div class="parameter">Parameter:</div>
+            <div class="value">{{ box2 }}</div>
         </div>
         <div class="quadrant">
             <div class="title">Box 3</div>
-            CO2: {{ box3 }}
+            <div class="parameter">Parameter:</div>
+            <div class="value">{{ box3 }}</div>
         </div>
         <div class="quadrant">
             <div class="title">Box 4</div>
-            CO2: {{ box4 }}
+            <div class="parameter">Parameter:</div>
+            <div class="value">{{ box4 }}</div>
+        </div>
+        <div class="buttons">
+            <button onclick="prevField()">Prev</button>
+            <button onclick="nextField()">Next</button>
         </div>
     </div>
 </body>
