@@ -10,7 +10,6 @@ Jinja2==3.1.4
 MarkupSafe==3.0.0
 pyserial==3.5
 PyYAML==6.0.2
-serial==0.0.97
 SQLAlchemy==2.0.35
 typing_extensions==4.12.2
 Werkzeug==3.0.4

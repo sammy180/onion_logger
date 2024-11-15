@@ -4,7 +4,11 @@ let boxIds = [];
 
 async function fetchScrollLabels() {
     try {
-        const response = await fetch('/setup');
+        const response = await fetch('/', {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
         const data = await response.json();
         scrollLabels = data.scroll_labels;
         boxIds = data.box_ids;
@@ -25,50 +29,48 @@ async function updateQuadrants() {
         // Update each quadrant and check time difference
         for (let i = 1; i <= 4; i++) {
             const quadrant = document.querySelector(`.quadrant:nth-child(${i})`);
-            const boxData = data[`box${i}`];
-        
-            // Set status flag to online or offline
-            if (boxData.status === 'online') {
-                quadrant.querySelector('.status').textContent = 'Status: Online';
-                quadrant.classList.remove('offline');
-                quadrant.classList.add('online');
-            } else {
-                quadrant.querySelector('.status').textContent = 'Status: Offline';
-                quadrant.classList.remove('online');
-                quadrant.classList.add('offline');
+            if (!quadrant) {
+                console.warn(`Quadrant ${i} not found in DOM`);
+                continue;
             }
+
+            const boxData = data[`box${i}`];
+
+            quadrant.querySelector('.title').textContent = `Box ${boxIds[i - 1]}`;
+            quadrant.querySelector('.parameter').textContent = `${field}: ${boxData.value}`;
+            quadrant.querySelector('.status ').textContent = `status: ${boxData.status}`;
+            quadrant.querySelector('.time_diff').textContent = `last meas: ${boxData.time_diff} min ago`;
+
             // Add or remove alert class based on time difference
             if (boxData.time_diff > 5) {
                 quadrant.classList.add('alert');
             } else {
                 quadrant.classList.remove('alert');
             }
-
-            quadrant.querySelector('.title').textContent = `Box ${boxIds[i-1]}`;
-            quadrant.querySelector('.parameter').textContent = `${field}: ${boxData.value}`;
-            quadrant.querySelector('.status').textContent = `status : ${boxData.status}`;
-            quadrant.querySelector('.time_diff').textContent = `last meas: ${boxData.time_diff} min ago`;
         }
-
     } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error('Error updating quadrants:', error);
     }
 }
 
-function nextField() {
+// Update quadrants every 15 seconds
+setInterval(updateQuadrants, 5000);
+
+// Initial update when the page loads
+window.onload = updateQuadrants;
+
+// Update quadrants every 15 seconds
+setInterval(fetchScrollLabels, 5000);
+
+async function nextField() {
     currentFieldIndex = (currentFieldIndex + 1) % scrollLabels.length;
-    updateQuadrants();
-    console.log('nextField has been run');
+    await updateQuadrants();
 }
 
 function prevField() {
     currentFieldIndex = (currentFieldIndex - 1 + scrollLabels.length) % scrollLabels.length;
     updateQuadrants();
-    console.log('prevField has been run');
 }
 
-// Fetch scroll labels and update quadrants when the page loads
-window.onload = async () => {
-    await fetchScrollLabels();
-    updateQuadrants();
-};
+// Call fetchScrollLabels on page load
+document.addEventListener('DOMContentLoaded', fetchScrollLabels);

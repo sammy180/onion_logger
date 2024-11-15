@@ -1,4 +1,5 @@
 import serial
+from serial.serialutil import SerialException
 import threading
 import time
 import os
@@ -41,7 +42,7 @@ class SensorData(Base):
     MOX_Temp = Column(Float, nullable=True)
     MOX_Hum = Column(Float, nullable=True)
     #MOX_Pres = Column(Float, nullable=True)
-    Mox_Heat = Column(Float, nullable=True)
+    MOX_Heat = Column(Float, nullable=True)
     Ext_Gas = Column(Float, nullable=True)
     EC0_NO2 = Column(Float, nullable=True)
     EC1_H2S = Column(Float, nullable=True)
