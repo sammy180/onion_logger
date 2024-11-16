@@ -113,6 +113,7 @@ def update_system():
                    '--text=Updating system... (placeholder)'])
 
 def show_popup(device_name):
+    print("device inserted")
     result = subprocess.run(['zenity', '--question',
                            '--width=300',
                            '--title=USB Device Detected',
@@ -131,7 +132,7 @@ def show_popup(device_name):
 
 def monitor_usb_devices():
     # Install required packages
-    os.system('sudo apt-get install -y zenity python3-pyudev')
+    #os.system('sudo apt-get install -y zenity python3-pyudev')
 
     # Setup udev monitoring
     context = pyudev.Context()
