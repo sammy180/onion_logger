@@ -4,6 +4,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, desc
 from datetime import datetime
 import os
+from threading import Thread
+import smbus
+import time
 
 #DATABASE_URL = "sqlite:////home/sammy/Active workspace/onion_logger/sensor_data2.db"
 DATABASE_URL = "sqlite:////home/pi/onion_logger/sensor_data.db"
@@ -20,6 +23,18 @@ db_session = Session(engine)
 
 app = Flask(import_name=__name__)
 app.secret_key = 'your_secret_key'  # Set a secret key for session management
+
+# Initialize the bus for SMBus
+DEVICE_BUS = 1
+DEVICE_ADDR = 0x13
+try:
+    bus = smbus.SMBus(DEVICE_BUS)
+except Exception as e:
+    print(f"Failed to initialize SMBus: {e}")
+    bus = None
+
+# Global reboot flags dictionary
+reboot_flags = {1: 0, 2: 0, 3: 0, 4: 0}
 
 # Read headers from file
 headers = []
@@ -51,11 +66,35 @@ def get_scroll_headers():
         print(f"Unexpected error reading scroll_headers.txt: {e}")
         exit(1)
 
+def reboot_relay(relay_id):
+    """Trigger relay asynchronously using a separate thread and increment reboot flag"""
+    def _trigger():
+        try:
+            if bus is not None:
+                bus.write_byte_data(DEVICE_ADDR, relay_id, 0xFF)  # Turn on relay
+                time.sleep(2)  # Delay for 2 seconds
+                bus.write_byte_data(DEVICE_ADDR, relay_id, 0x00)  # Turn off relay
+                print(f"Relay {relay_id} rebooted")
+
+                # Increment the reboot flag
+                reboot_flags[relay_id] += 1
+                print(f"Reboot flag for relay {relay_id} incremented to {reboot_flags[relay_id]}")
+
+        except Exception as e:
+            print(f"Failed to trigger relay {relay_id}: {e}")
+
+    # Start the relay operation in a separate thread
+    Thread(target=_trigger, daemon=True).start()
+
 @app.route('/')
 def index():
     try:
         # Get scroll headers
         scroll_headers = get_scroll_headers()
+            # Reset all reboot flags to 0
+        for key in reboot_flags.keys():
+            reboot_flags[key] = 0
+
         
         # Initialize defaults
         box_ids = session.get('box_ids', [])
@@ -111,6 +150,10 @@ def index():
 def get_data():
     field = request.args.get('field')
     box_ids = session.get('box_ids', [])
+    
+    # Trigger relay based on some condition (example)
+    if field == 'Error' or field == 'HP0':  # Add your condition here
+        trigger_relay_async(1, True)  # Turn on relay 1
 
     # Initialize data structure for all possible boxes
     data = {}
@@ -127,20 +170,39 @@ def get_data():
             box = db_session.query(SensorData).filter_by(BoxID=box_id).order_by(SensorData.id.desc()).first()
             if box:
                 now = datetime.now()
-                time_diff = int((now - box.GW_datetime).total_seconds() / 60) if box else 'Error'
-                
+                time_diff = int((now - box.GW_datetime).total_seconds() / 60)
+
                 data[f"box{i}"] = {
-
-
-                    "value": getattr(box, field, 'Error') if box is not None else 'Error',
-                    "status": "Offline" if isinstance(time_diff, int) and time_diff > 5 else "Online",
+                    "value": getattr(box, field, 'Error'),
+                    "status": "Offline" if time_diff > 3 else "Online",
                     "time_diff": time_diff
+                }
+
+                # Extract 'fuse_id' and 'rel' regardless of status
+                fuse_id = getattr(box, 'FuseID', '0')
+                rel = fuse_id[-1] if fuse_id else '0'
+                try:
+                    rel = int(rel)
+                except ValueError:
+                    rel = 0  # Default to 0 if conversion fails
+
+                # Now use 'rel' safely
+                if data[f"box{i}"]["status"] == "Offline" and reboot_flags.get(rel, 0) == 0:
+                    print(f"FuseID for box {box.BoxID}: {fuse_id}")
+                    # Proceed with reboot
+                    reboot_relay(rel)
+            else:
+                # Handle case where box data is not found
+                data[f"box{i}"] = {
+                    "value": 'No Data',
+                    "status": "Offline",
+                    "time_diff": 'N/A'
                 }
         except Exception as e:
             app.logger.error(f"Error processing box {box_id}: {str(e)}")
             continue
 
-
+    print("sending data")
 
     return jsonify(data)
 

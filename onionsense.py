@@ -31,6 +31,7 @@ class SensorData(Base):
 
     id = Column(Integer, primary_key=True, unique=True, nullable=False)
     BoxID = Column(String, nullable=True)
+    FuseID = Column(String, nullable=True)
     Time = Column(String, nullable=True)
     minutePt = Column(String, nullable=True)
     GW_datetime = Column(DateTime, default=datetime.now)
@@ -133,7 +134,9 @@ class SerialMonitor:
         try:
             print(f"[{self.port_name}] Inserting data into database.")
             sensor_data = SensorData(
+                
                 BoxID=values[0] if len(values) > 0 else None,
+                FuseID=self.port_name,
                 Time=values[1] if len(values) > 1 else None,
                 minutePt=values[2] if len(values) > 2 else None,
                 Ext_Temp=float(values[3]) if len(values) > 3 else None,

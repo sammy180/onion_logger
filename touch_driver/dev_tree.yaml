@@ -1,0 +1,36 @@
+# FILE: Documentation/devicetree/bindings/input/touch/ft5426.yaml
+%YAML 1.2
+---
+$id: http://devicetree.org/schemas/input/touch/ft5426.yaml
+$schema: http://devicetree.org/meta-schemas/core.yaml
+
+title: FT5426 Capacitive Touch Controller
+
+maintainers:
+  - Your Name <your@email.com>
+
+properties:
+  compatible:
+    const: focaltech,ft5426
+
+  reg:
+    maxItems: 1
+    description: I2C slave address
+
+  interrupt-parent:
+    description: phandle to the parent interrupt controller
+
+  interrupts:
+    maxItems: 1
+    description: IRQ line for the touch controller
+
+  reset-gpios:
+    maxItems: 1
+    description: GPIO pin for reset control
+
+required:
+  - compatible
+  - reg
+  - interrupt-parent
+  - interrupts
+  - reset-gpios
