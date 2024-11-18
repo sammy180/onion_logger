@@ -9,7 +9,6 @@ EC_Hum
 MOX_Temp
 MOX_Hum
 MOX_Pres
-MOX_Heat
 Ext_Gas
 EC0_NO2
 EC1_H2S
