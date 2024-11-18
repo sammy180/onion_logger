@@ -26,7 +26,7 @@ app.secret_key = 'your_secret_key'  # Set a secret key for session management
 
 # Initialize the bus for SMBus
 DEVICE_BUS = 1
-DEVICE_ADDR = 0x13
+DEVICE_ADDR = 0x10
 try:
     bus = smbus.SMBus(DEVICE_BUS)
 except Exception as e:
