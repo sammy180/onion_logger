@@ -63,7 +63,8 @@ window.onload = async () => {
 };
 
 // Update quadrants every 15 seconds
-setInterval(fetchScrollLabels, 120000);
+
+setInterval(fetchScrollLabels, 300000);
 
 async function nextField() {
     currentFieldIndex = (currentFieldIndex + 1) % scrollLabels.length;
