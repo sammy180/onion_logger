@@ -7,7 +7,7 @@ Wants=multi-user.target
 Type=simple 
 ExecStart=/home/pi/onion_logger/onionenv/bin/python3 /home/pi/onion_logger/autoload.py
 WorkingDirectory=/home/pi/onion_logger
-User=pi
+User=root
 Restart=always
 RestartSec=10
 Environment=DISPLAY=:0

@@ -38,9 +38,9 @@ def download_data():
         usb_paths = glob.glob('/media/pi/*')
         if not usb_paths:
             subprocess.run(['zenity', '--error',
-                          '--width=300',
-                          '--title=Error',
-                          '--text=No USB device found'])
+                            '--width=300',
+                            '--title=Error',
+                            '--text=No USB device found'])
             return
 
         usb_path = usb_paths[-1]
@@ -48,9 +48,9 @@ def download_data():
         
         if not os.path.exists(source_file):
             subprocess.run(['zenity', '--error',
-                          '--width=300',
-                          '--title=Error',
-                          '--text=Database file not found'])
+                            '--width=300',
+                            '--title=Error',
+                            '--text=Database file not found'])
             return
 
         dest_file = os.path.join(usb_path, source_file)
@@ -59,52 +59,31 @@ def download_data():
         if os.path.exists(dest_file):
             # Ask user if they want to overwrite
             result = subprocess.run(['zenity', '--question',
-                                   '--width=300',
-                                   '--title=File Exists',
-                                   '--text=File already exists. Overwrite?'],
-                                   capture_output=True)
+                                     '--width=300',
+                                     '--title=File Exists',
+                                     '--text=File already exists. Overwrite?'],
+                                     capture_output=True, text=True)
             
             if result.returncode != 0:  # User chose not to overwrite
                 # Find next available filename
                 counter = 1
-                while True:
-                    new_name = f'sensor_data_{counter}.db'
-                    dest_file = os.path.join(usb_path, new_name)
-                    if not os.path.exists(dest_file):
-                        break
+                while os.path.exists(dest_file):
+                    dest_file = os.path.join(usb_path, f"{os.path.splitext(source_file)[0]}_{counter}{os.path.splitext(source_file)[1]}")
                     counter += 1
 
-        # Copy file
-        shutil.copy2(source_file, dest_file)
+        # Ensure the script has write permissions to the destination directory
+        os.chmod(usb_path, 0o777)
+        shutil.copy(source_file, dest_file)
         
-
-        copied_file_name = os.path.basename(dest_file)
         subprocess.run(['zenity', '--info',
-                   '--width=300',
-                   '--title=Success',
-                   f'--text=Data successfully copied to USB device as {copied_file_name}'])
-        
-        # After successful copy, show dialog with OK and Eject options
-        result = subprocess.run(['zenity', '--question',
-                               '--width=400',
-                               '--height=200',
-                               '--title=Success',
-                               '--text=Data copied successfully',
-                               '--ok-label=OK',
-                               '--cancel-label=Eject',
-                               '--default-size=300,100'],
-                               capture_output=True)
-        
-        if result.returncode == 1:  # User chose Eject
-            eject_usb(usb_path)
-
+                        '--width=300',
+                        '--title=Success',
+                        f'--text=Data downloaded successfully as {os.path.basename(dest_file)}'])
     except Exception as e:
         subprocess.run(['zenity', '--error',
-                       '--width=400',
-                       '--height=200',
-                       '--title=Error',
-                       f'--text=Failed to copy data: {str(e)}',
-                       '--default-size=300,100'])
+                        '--width=300',
+                        '--title=Error',
+                        f'--text=Failed to download data: {str(e)}'])
 
 def update_system():
     subprocess.run(['zenity', '--info',
@@ -122,9 +101,11 @@ def show_popup(device_name):
                            '--cancel-label=Cancel',
                            '--extra-button=Update'],
                            capture_output=True)
+    print(result.returncode)
     
     if result.returncode == 0:  # Download Data
         download_data()
+        print("download data")
     elif result.returncode == 1:  # Cancel
         pass
     elif result.returncode == 2:  # Update
