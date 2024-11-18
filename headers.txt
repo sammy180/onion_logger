@@ -1,13 +1,14 @@
 BoxID
 Time
 DataPt
-Ex_Temp
-Ex_Hum
-Ex_Pres
+Ext_Temp
+Ext_Hum
+Ext_Pressure
 EC_Temp
 EC_Hum
 MOX_Temp
 MOX_Hum
+MOX_Pres
 MOX_Heat
 Ext_Gas
 EC0_NO2
@@ -22,6 +23,8 @@ CO2
 ENS160
 SGPVRaw
 SGPNRaw
+SGPVin
+SGPNin
 TGS2603
 TGS2620
 TGS2602
