@@ -78,3 +78,8 @@ function prevField() {
 
 // Call fetchScrollLabels on page load
 document.addEventListener('DOMContentLoaded', fetchScrollLabels);
+
+// Refresh page every 5 minutes (300000 milliseconds)
+setInterval(() => {
+    window.location.reload();
+}, 305000);
