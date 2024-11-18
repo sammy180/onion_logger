@@ -1,0 +1,22 @@
+Nov 16 21:40:08 fuseCtl systemd[1]: autoload.service: Found dependency on graphical.target/stop
+Nov 16 21:40:08 fuseCtl systemd[1]: autoload.service: Found dependency on autoload.service/stop
+Nov 16 21:40:08 fuseCtl systemd[1]: autoload.service: Job multi-user.target/stop deleted to break ordering cycle starting with autoload.service/stop
+Nov 16 21:40:08 fuseCtl systemd[1]: Stopping autoload.service - usb autoloader for db download...
+Nov 16 21:40:08 fuseCtl systemd[1]: autoload.service: Deactivated successfully.
+Nov 16 21:40:08 fuseCtl systemd[1]: Stopped autoload.service - usb autoloader for db download.
+-- Boot de4cffd78678413dad415c03e8c4ddfd --
+Nov 16 21:42:27 fuseCtl systemd[1]: Started autoload.service - usb autoloader for db download.
+Nov 16 21:42:34 fuseCtl dbus-daemon[2368]: [session uid=1000 pid=2366] Activating service name='org.a11y.Bus' requested by ':1.0' (uid=1000 pid=2355 comm="zenity --question --width=300 --title=USB Device D")
+Nov 16 21:42:34 fuseCtl dbus-daemon[2368]: [session uid=1000 pid=2366] Successfully activated service 'org.a11y.Bus'
+Nov 16 21:42:34 fuseCtl org.a11y.Bus[2375]: dbus-daemon[2375]: Activating service name='org.a11y.atspi.Registry' requested by ':1.0' (uid=1000 pid=2355 comm="zenity --question --width=300 --title=USB Device D")
+Nov 16 21:42:34 fuseCtl org.a11y.Bus[2375]: dbus-daemon[2375]: Successfully activated service 'org.a11y.atspi.Registry'
+Nov 16 21:42:34 fuseCtl org.a11y.Bus[2383]: SpiRegistry daemon is running with well-known name - org.a11y.atspi.Registry
+-- Boot 22e571132f9a4ae9bdcb958b68ab30f6 --
+Nov 16 21:50:03 fuseCtl systemd[1]: Started autoload.service - usb autoloader for db download.
+Nov 16 21:50:13 fuseCtl systemd[1]: multi-user.target: Found ordering cycle on graphical.target/stop
+Nov 16 21:50:13 fuseCtl systemd[1]: multi-user.target: Found dependency on autoload.service/stop
+Nov 16 21:50:13 fuseCtl systemd[1]: multi-user.target: Found dependency on multi-user.target/stop
+Nov 16 21:50:13 fuseCtl systemd[1]: multi-user.target: Job graphical.target/stop deleted to break ordering cycle starting with multi-user.target/stop
+Nov 16 21:50:13 fuseCtl systemd[1]: Stopping autoload.service - usb autoloader for db download...
+Nov 16 21:50:13 fuseCtl systemd[1]: autoload.service: Deactivated successfully.
+Nov 16 21:50:13 fuseCtl systemd[1]: Stopped autoload.service - usb autoloader for db download.

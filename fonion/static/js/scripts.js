@@ -54,13 +54,16 @@ async function updateQuadrants() {
 }
 
 // Update quadrants every 15 seconds
-setInterval(updateQuadrants, 5000);
+setInterval(updateQuadrants, 10000);
 
-// Initial update when the page loads
-window.onload = updateQuadrants;
+// Initial update when the page loads 
+window.onload = async () => {
+    await fetchScrollLabels();
+    updateQuadrants();
+};
 
 // Update quadrants every 15 seconds
-setInterval(fetchScrollLabels, 5000);
+setInterval(fetchScrollLabels, 120000);
 
 async function nextField() {
     currentFieldIndex = (currentFieldIndex + 1) % scrollLabels.length;

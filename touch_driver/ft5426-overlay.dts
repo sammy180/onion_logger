@@ -1,0 +1,26 @@
+// FILE: ft5426-overlay.dts
+/dts-v1/;
+/plugin/;
+
+/ {
+    compatible = "brcm,bcm2835";
+
+    fragment@0 {
+        target = <&i2c1>;
+        __overlay__ {
+            #address-cells = <1>;
+            #size-cells = <0>;
+            status = "okay";
+
+            ft5426@38 {
+                compatible = "focaltech,ft5426";
+                reg = <0x38>;
+                interrupt-parent = <&gpio>;
+                interrupts = <4 2>; // Fixed IRQ type specification
+                reset-gpios = <&gpio 17 0>; // Fixed GPIO specification
+                touchscreen-size-x = <800>;
+                touchscreen-size-y = <480>;
+            };
+        };
+    };
+};

@@ -1,0 +1,16 @@
+[Unit]
+Description=Touch Mouse Service
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/onion_logger/touch_mouse
+WorkingDirectory=/home/pi/onion_logger
+User=root
+Restart=always
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=touch_mouse
+
+[Install]
+WantedBy=multi-user.target
