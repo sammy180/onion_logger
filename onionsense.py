@@ -42,7 +42,7 @@ class SensorData(Base):
     EC_Hum = Column(Float, nullable=True)
     MOX_Temp = Column(Float, nullable=True)
     MOX_Hum = Column(Float, nullable=True)
-    #MOX_Pres = Column(Float, nullable=True)
+    MOX_Pres = Column(Float, nullable=True)
     MOX_Heat = Column(Float, nullable=True)
     Ext_Gas = Column(Float, nullable=True)
     EC0_NO2 = Column(Float, nullable=True)
@@ -146,30 +146,31 @@ class SerialMonitor:
                 EC_Hum=float(values[7]) if len(values) > 7 else None,
                 MOX_Temp=float(values[8]) if len(values) > 8 else None,
                 MOX_Hum=float(values[9]) if len(values) > 9 else None,
-                MOX_Heat=float(values[10]) if len(values) > 10 else None,
-                Ext_Gas=float(values[11]) if len(values) > 11 else None,
-                EC0_NO2=float(values[12]) if len(values) > 12 else None,
-                EC1_H2S=float(values[13]) if len(values) > 13 else None,
-                EC2_SO2=float(values[14]) if len(values) > 14 else None,
-                EC3_VOC=float(values[15]) if len(values) > 15 else None,
-                EC0_Ref=float(values[16]) if len(values) > 16 else None,
-                EC1_Ref=float(values[17]) if len(values) > 17 else None,
-                EC2_Ref=float(values[18]) if len(values) > 18 else None,
-                EC3_Ref=float(values[19]) if len(values) > 19 else None,
-                CO2=float(values[20]) if len(values) > 20 else None,
-                ENS160=float(values[21]) if len(values) > 21 else None,
-                SGPVRaw=float(values[22]) if len(values) > 22 else None,
-                SGPNRaw=float(values[23]) if len(values) > 23 else None,
-                #SGPVin=float(values[24]) if len(values) > 24 else None,
-                #SGPNin=float(values[25]) if len(values) > 25 else None,
-                TGS2603=float(values[26]) if len(values) > 26 else None,
-                TGS2620=float(values[27]) if len(values) > 27 else None,
-                TGS2602=float(values[28]) if len(values) > 28 else None,
-                HP0=float(values[29]) if len(values) > 29 else None,
-                HP1=float(values[30]) if len(values) > 30 else None,
-                HP2=float(values[30]) if len(values) > 30 else None,
-                HP3=float(values[31]) if len(values) > 31 else None,
-                Error=float(values[32]) if len(values) > 32 else None,
+                MOX_Pres=float(values[10]) if len(values) > 10 else None,
+                MOX_Heat=float(values[11]) if len(values) > 11 else None,
+                Ext_Gas=float(values[12]) if len(values) > 12 else None,
+                EC0_NO2=float(values[13]) if len(values) > 13 else None,
+                EC1_H2S=float(values[14]) if len(values) > 14 else None,
+                EC2_SO2=float(values[15]) if len(values) > 15 else None,
+                EC3_VOC=float(values[16]) if len(values) > 16 else None,
+                EC0_Ref=float(values[17]) if len(values) > 17 else None,
+                EC1_Ref=float(values[18]) if len(values) > 18 else None,
+                EC2_Ref=float(values[19]) if len(values) > 19 else None,
+                EC3_Ref=float(values[20]) if len(values) > 20 else None,
+                CO2=float(values[21]) if len(values) > 21 else None,
+                ENS160=float(values[22]) if len(values) > 22 else None,
+                SGPVRaw=float(values[23]) if len(values) > 23 else None,
+                SGPNRaw=float(values[24]) if len(values) > 24 else None,
+                #SGPVin=float(values[25]) if len(values) > 25 else None,
+                #SGPNin=float(values[26]) if len(values) > 26 else None,
+                TGS2603=float(values[27]) if len(values) > 27 else None,
+                TGS2620=float(values[28]) if len(values) > 28 else None,
+                TGS2602=float(values[29]) if len(values) > 29 else None,
+                HP0=float(values[30]) if len(values) > 30 else None,
+                HP1=float(values[31]) if len(values) > 31 else None,
+                HP2=float(values[32]) if len(values) > 32 else None,
+                HP3=float(values[33]) if len(values) > 33 else None,
+                Error=float(values[34]) if len(values) > 34 else None,
                 
             )
             session.add(sensor_data)
