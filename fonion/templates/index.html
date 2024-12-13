@@ -4,97 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quadrant Display</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <title>Quadrant Buttons</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
 
-        html,
-        body {
-            height: 100%;
-            width: 100%;
-            font-family: Arial, sans-serif;
-        }
-
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            height: 100vh;
-            width: 100vw;
-            gap: 0;
-            padding: 10px;
-            position: relative;
-        }
-
-        .quadrant {
-            flex: 1 1 calc(50% - 20px);
-            border: 1px solid black;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5em;
-            background-color: #a0ee68;
-            /* Light yellow background */
-            transition: background-color 0.3s;
-        }
-
-        .alert {
-            background-color: #e76767 !important;
-            /* Light red */
-        }
-
-        .buttons {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: auto;
-            border: 1px solid #ccc;
-            border-radius: 60px;
-            /* Fully rounded corners */
-            overflow: hidden;
-        }
-
-        button {
-            padding: 20px 40px;
-            /* Larger buttons */
-            font-size: 3em;
-            /* Larger font size */
-            cursor: pointer;
-            border: none;
-            background-color: #f0f0f0;
-            transition: background-color 0.3s;
-            flex: 1 1 50%;
-        }
-
-        button:hover {
-            background-color: #e0e0e0;
-        }
-
-        button:first-child {
-            border-right: 1px solid #ccc;
-            border-top-left-radius: 30px;
-            /* Fully rounded left side */
-            border-bottom-left-radius: 30px;
-            /* Fully rounded left side */
-        }
-
-        button:last-child {
-            border-top-right-radius: 30px;
-            /* Fully rounded right side */
-            border-bottom-right-radius: 30px;
-            /* Fully rounded right side */
-        }
-    </style>
-    <script src="/static/js/scripts.js" defer></script>
 </head>
 
 <body>
@@ -102,32 +14,37 @@
         <div class="quadrant">
             <div class="title">Box 1</div>
             <div class="parameter">Parameter:</div>
-            <div class="status">{{ box1 }}</div>
-            <div class="time_diff">last seen </div>
+            <!--<div class="status">{{ box1 }}</div>
+            <div class="time_diff">last seen </div> -->
         </div>
         <div class="quadrant">
             <div class="title">Box 2</div>
             <div class="parameter">Parameter:</div>
-            <div class="status">{{ box2 }}</div>
-            <div class="time_diff">last seen </div>
+            <!-- <div class="status">{{ box2 }}</div>
+            <div class="time_diff">last seen </div> -->
         </div>
         <div class="quadrant">
             <div class="title">Box 3</div>
             <div class="parameter">Parameter:</div>
-            <div class="status">Status: offline </div>
-            <div class="time_diff">last seen </div>
+            <!--<div class="status">Status: offline </div> 
+            <div class="time_diff">last seen </div> -->
         </div>
         <div class="quadrant">
             <div class="title">Box 4</div>
             <div class="parameter">Parameter:</div>
-            <div class="status"> Status: Offline </div>
-            <div class="time_diff">last seen </div>
+            <!--<div class="status"> Status: Offline </div> 
+            <div class="time_diff">last seen </div> -->
         </div>
         <div class="buttons">
-            <button onclick="prevField()">Prev</button>
-            <button onclick="nextField()">Next</button>
+            <button class="nav-button" onclick="prevField()">Prev</button>
+            <button class="nav-button" onclick="nextField()">Next</button>
         </div>
+        
+        <button class="circle-quadrant top-left" onclick="showDropdownMenu">MN</button>
+        <button class="circle-quadrant top-right" onclick="minimizeBrowser()">Cl</button>
+        <div id="datetime-bar" class="datetime-bar"></div>
     </div>
+    <script src="/static/js/scripts.js"></script>
 </body>
 
 </html>

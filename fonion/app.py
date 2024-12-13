@@ -146,6 +146,11 @@ def index():
         app.logger.error(f"Error in index route: {str(e)}")
         return render_template('index.html', error="System error occurred", data={})
 
+@app.route('/plot')
+def plot():
+    
+    return render_template('plot.html')
+
 @app.route('/get_data')
 def get_data():
     field = request.args.get('field')

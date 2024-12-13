@@ -38,8 +38,8 @@ async function updateQuadrants() {
 
             quadrant.querySelector('.title').textContent = `Box ${boxIds[i - 1]}`;
             quadrant.querySelector('.parameter').textContent = `${field}: ${boxData.value}`;
-            quadrant.querySelector('.status ').textContent = `status: ${boxData.status}`;
-            quadrant.querySelector('.time_diff').textContent = `last meas: ${boxData.time_diff} min ago`;
+            //quadrant.querySelector('.status ').textContent = `status: ${boxData.status}`;
+            //quadrant.querySelector('.time_diff').textContent = `last meas: ${boxData.time_diff} min ago`;
 
             // Add or remove alert class based on time difference
             if (boxData.time_diff > 5) {
@@ -83,3 +83,20 @@ document.addEventListener('DOMContentLoaded', fetchScrollLabels);
 setInterval(() => {
     window.location.reload();
 }, 305000);
+
+
+function minimizeBrowser() {
+    window.close();
+}
+
+function showDropdownMenu() {
+    alert('Dropdown menu clicked');
+}
+
+function updateDateTime() {
+    const now = new Date();
+    const datetimeStr = now.toLocaleString();
+    document.getElementById('datetime-bar').innerText = datetimeStr;
+}
+
+setInterval(updateDateTime, 1000);
